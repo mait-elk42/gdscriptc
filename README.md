@@ -1,108 +1,138 @@
 # GDScriptC (.gdsc)
 
-A C-like dialect of GDScript for the Godot Engine. Same engine, same runtime,
-different syntax: **braces `{ }`**, **semicolons `;`**, and **required parentheses**.
+GDScript, but with **`{ }` braces** and **`;` semicolons** instead of indentation.
+Everything else is the same Godot you know.
 
-It compiles to the same bytecode as GDScript, so every Godot API, type, and
-feature works identically — you're only changing how you write the code.
-
-## Example
+## Full example (shows every change)
 
 ```gdscript
-extends CharacterBody2D;
+# GDScriptC: braces instead of indentation, ";" instead of newlines.
 
-@export var speed := 300.0;
+extends Node2D;                       # statements end with ";"
 
-enum State { IDLE, RUN };
+@export var speed := 300.0;           # annotations are unchanged
+@export var jump_velocity := -400.0;
 
+signal died(amount: int);             # ";" after signal
+
+const GRAVITY := 9.8;                 # ";" after const
+
+enum State { IDLE, RUN, DEAD };       # enum ends with ";"
+
+var health := 100;
 var state := State.IDLE;
 
-func _physics_process(delta: float) -> void {
-	match (state) {
-		State.IDLE: {
-			if (Input.is_action_pressed("move")) {
-				state = State.RUN;
-			}
-		}
-		State.RUN: {
-			var dir := Input.get_vector("left", "right", "up", "down");
-			velocity = dir * speed;
-			move_and_slide();
-		}
+var inventory := {                    # dictionaries still use { }
+	"sword": 1,
+	"potion": 3,
+};
+
+# Functions: { } and no ":" before the body.
+func _ready() -> void {
+	print("hello");
+}
+
+# if / elif / else: parentheses are REQUIRED.
+func take_damage(amount: int) -> void {
+	health -= amount;
+	if (health <= 0) {
+		die();
+	} elif (health < 25) {
+		warn();
+	} else {
+		heal();
 	}
+}
+
+# while: parentheses are REQUIRED.
+func regen() -> void {
+	while (health < 100) {
+		health += 1;
+	}
+}
+
+# for: kept as GDScript's foreach — NO parentheses.
+func _process(delta: float) -> void {
+	for enemy in get_enemies() {
+		enemy.hurt(1);
+	}
+	for i in range(10) {
+		print(i);
+	}
+}
+
+# match: subject in ( ), patterns keep ":", bodies use { }.
+func choose_action() -> void {
+	match (state) {
+		State.IDLE: idle();
+		State.RUN: run();
+		State.DEAD: {
+			play_death();
+			queue_free();
+		}
+		_: pass;
+	}
+}
+
+# Lambdas use { }.
+func make_multiplier(factor: int) -> Callable {
+	var f = func(x) { return x * factor; };
+	return f;
+}
+
+# Properties (get/set) use { }.
+var max_health: int {
+	get {
+		return max_health;
+	}
+	set(value) {
+		max_health = value;
+	}
+}
+
+# Inner classes use { }.
+class Helper {
+	func double(x: int) -> int {
+		return x * 2;
+	}
+}
+
+# Single statements don't need braces.
+func quick_check() -> void {
+	if (health > 0) print("alive"); else print("dead");
+	while (running) tick();
+	for i in range(3) print(i);
 }
 ```
 
-## Syntax reference
+## The rules (that's the whole language)
 
-| Construct | Syntax |
-|---|---|
-| Blocks | `{ }` — no colon before them |
-| Statement terminator | `;` (newlines are insignificant) |
-| `if` / `elif` / `while` | `(condition)` **required** |
-| `for` | unchanged foreach: `for i in range(10) { }` |
-| `match` | `match (subject) { pattern: { } }` — patterns keep `:` |
-| Function | `func name(args) -> T { }` |
-| Type annotation | `:` — `var x: int;` |
-| Dictionary | `{ "a": 1 }` (braces overloaded, like JS) |
-| Enum | `enum State { A, B };` |
-| Lambda | `func(x) { return x * 2; }` |
-| Single-statement body | `if (x) foo();` — braces optional for one statement |
-| Empty body | `func f() { }` — allowed |
+| Change | GDScript | GDScriptC |
+|---|---|---|
+| Blocks | `:` + indentation | `{ }` |
+| End of statement | newline | `;` |
+| `if` / `elif` / `while` | `if x:` | `if (x) { }` |
+| `for` | `for i in range(10):` | `for i in range(10) { }` (unchanged!) |
+| `match` | `match x:` | `match (x) { }` |
 
-## Differences from GDScript
+Still uses `:` only for: type annotations (`var x: int`), dictionary keys, and `match` patterns.
 
-1. **Indentation → braces.** No INDENT/DEDENT; blocks are `{ }`.
-2. **Block colon removed** (kept for type annotations, dict keys, `match` patterns).
-3. **Newline → `;`.** Newlines are whitespace.
-4. **Conditions require `( )`** for `if`/`elif`/`while`/`match`.
-5. **Empty function bodies allowed** (GDScript requires `pass`).
-6. **Single-statement bodies allowed** without braces.
+## What's NOT included
 
-## Not (yet) supported
-
-- C-style `for (int i = 0; i < n; i++)` — use `for i in range(n)`.
-- `++` / `--` — use `i += 1`.
-- String interpolation `"{}"` — use `%`: `"hello %s" % name`.
+- C-style `for (int i = 0; i < n; i++)` → use `for i in range(n)`
+- `++` / `--` → use `i += 1`
+- `"{}"` string interpolation → use `"hello %s" % name`
 
 ## Install
 
-Requires a Godot source checkout (built-in GDScript module must be present —
-GDScriptC is forked from it and coexists alongside it).
-
 ```bash
-# clone this repo as the "gdc" module
 git clone https://github.com/you/gdscriptc custom_modules/gdc
-
-# build the editor
-scons platform=linuxbsd target=editor custom_modules=custom_modules -j$(nproc)
+scons platform=linuxbsd target=editor custom_modules=custom_modules
 ```
 
-Then attach `.gdsc` scripts like `.gd` scripts. To run one standalone:
-
-```bash
-godot --headless --script path/to/script.gdsc
-```
-
-## Compatibility
-
-This module is forked from **Godot 4.7.x**'s GDScript module. It works with the
-matching Godot version. Other 4.x/3.x versions may not compile, because Godot's
-internal GDScript APIs change between releases.
-
-## Structure
-
-```
-gdc/
-├── config.py                 # module registration
-├── SCsub                     # build script
-├── register_types.cpp/h      # language registration
-├── gdscriptc_*.cpp/h         # tokenizer, parser, analyzer, compiler, VM
-├── editor/                   # highlighter, docgen, script templates
-└── language_server/          # LSP (completion/hover/go-to-definition)
-```
+Attach `.gdsc` scripts like `.gd` scripts.
 
 ## License
 
-MIT — forked from the Godot Engine (also MIT). See `LICENSE`.
+MIT — forked from the Godot Engine (MIT). See `LICENSE`.
 
