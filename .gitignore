@@ -1,0 +1,3 @@
+__pycache__/
+*.pyc
+editor/script_templates/templates.gen.h
