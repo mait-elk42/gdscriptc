@@ -126,7 +126,7 @@ Still uses `:` only for: type annotations (`var x: int`), dictionary keys, and `
 ## Install
 
 ```bash
-git clone https://github.com/you/gdscriptc custom_modules/gdc
+git clone https://github.com/mait-elk42/gdscriptc custom_modules/gdc
 scons platform=linuxbsd target=editor custom_modules=custom_modules
 ```
 
