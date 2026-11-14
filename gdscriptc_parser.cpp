@@ -623,6 +623,7 @@ void GDScriptCParser::synchronize() {
 		}
 
 		switch (current.type) {
+			case GDScriptCTokenizer::Token::BRACE_CLOSE:
 			case GDScriptCTokenizer::Token::CLASS:
 			case GDScriptCTokenizer::Token::FUNC:
 			case GDScriptCTokenizer::Token::STATIC:
