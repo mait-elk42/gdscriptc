@@ -1251,6 +1251,11 @@ GDScriptCParser::VariableNode *GDScriptCParser::parse_variable(bool p_is_static,
 
 			// Parse type.
 			variable->datatype_specifier = parse_type();
+			if (variable->datatype_specifier != nullptr && variable->datatype_specifier->type_chain.size() == 1 && variable->datatype_specifier->container_types.is_empty() && variable->datatype_specifier->type_chain[0]->name == SNAME("auto")) {
+				// `auto` is an alias for type inference.
+				variable->infer_datatype = true;
+				variable->datatype_specifier = nullptr;
+			}
 		}
 	}
 
@@ -1460,6 +1465,11 @@ GDScriptCParser::ConstantNode *GDScriptCParser::parse_constant(bool p_is_static)
 		} else {
 			// Parse type.
 			constant->datatype_specifier = parse_type();
+			if (constant->datatype_specifier != nullptr && constant->datatype_specifier->type_chain.size() == 1 && constant->datatype_specifier->container_types.is_empty() && constant->datatype_specifier->type_chain[0]->name == SNAME("auto")) {
+				// `auto` is an alias for type inference.
+				constant->infer_datatype = true;
+				constant->datatype_specifier = nullptr;
+			}
 		}
 	}
 
@@ -1499,6 +1509,11 @@ GDScriptCParser::ParameterNode *GDScriptCParser::parse_parameter() {
 			// Parse type.
 			make_completion_context(COMPLETION_TYPE_NAME, parameter);
 			parameter->datatype_specifier = parse_type();
+			if (parameter->datatype_specifier != nullptr && parameter->datatype_specifier->type_chain.size() == 1 && parameter->datatype_specifier->container_types.is_empty() && parameter->datatype_specifier->type_chain[0]->name == SNAME("auto")) {
+				// `auto` is an alias for type inference.
+				parameter->infer_datatype = true;
+				parameter->datatype_specifier = nullptr;
+			}
 		}
 	}
 
@@ -2273,6 +2288,10 @@ GDScriptCParser::ForNode *GDScriptCParser::parse_for() {
 		n_for->datatype_specifier = parse_type();
 		if (n_for->datatype_specifier == nullptr) {
 			push_error(R"(Expected type specifier after ":".)");
+		} else if (n_for->datatype_specifier->type_chain.size() == 1 && n_for->datatype_specifier->container_types.is_empty() && n_for->datatype_specifier->type_chain[0]->name == SNAME("auto")) {
+			// `auto` is an alias for type inference.
+			n_for->infer_datatype = true;
+			n_for->datatype_specifier = nullptr;
 		}
 	}
 

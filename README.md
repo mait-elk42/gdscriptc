@@ -1,7 +1,7 @@
 # GDScriptC (.gdsc)
 
 GDScript, but with **`{ }` braces** and **`;` semicolons** instead of indentation.
-Everything else is the same Godot you know.
+Everything else is the same Godot you know — plus **enforced static typing** (see below).
 
 ## Full example (shows every change)
 
@@ -53,7 +53,7 @@ func regen() -> void {
 
 # for: kept as GDScript's foreach — NO parentheses.
 func _process(delta: float) -> void {
-	for enemy in get_enemies() {
+	for enemy: Enemy in get_enemies() {
 		enemy.hurt(1);
 	}
 	for i in range(10) {
@@ -76,7 +76,7 @@ func choose_action() -> void {
 
 # Lambdas use { }.
 func make_multiplier(factor: int) -> Callable {
-	var f = func(x) { return x * factor; };
+	var f := func(x: int) -> int { return x * factor; };
 	return f;
 }
 
@@ -85,7 +85,7 @@ var max_health: int {
 	get {
 		return max_health;
 	}
-	set(value) {
+	set(value: int) {
 		max_health = value;
 	}
 }
@@ -115,18 +115,58 @@ func quick_check() -> void {
 | `for` | `for i in range(10):` | `for i in range(10) { }` (unchanged!) |
 | `match` | `match x:` | `match (x) { }` |
 
-Still uses `:` only for: type annotations (`var x: int`), dictionary keys, and `match` patterns.
+Still uses `:` only for: type annotations (`var x: int`, `var x: auto`), dictionary keys, and `match` patterns.
+
+## Strict typing (enforced)
+
+GDScriptC enforces static typing by default (unlike GDScript, where it's optional):
+
+- **Declarations must be typed** — use `:=` (infer), `: Type` (explicit), or `: auto` (infer):
+  ```gdscript
+  var i = 10;          # ❌ error
+  var i := 10;         # ✅ inferred
+  var i : int = 10;    # ✅ explicit
+  var i : auto = 10;   # ✅ explicit inference
+  ```
+- **Function return types are required**, including lambdas:
+  ```gdscript
+  func f() -> void { ... }
+  var g := func(x: int) -> int { return x * 2; };
+  ```
+- **Parameters must be typed**:
+  ```gdscript
+  func f(p = 5) { ... }        # ❌ error
+  func f(p: int = 5) { ... }   # ✅
+  func f(p: auto = 5) { ... }  # ✅
+  ```
+- **`for` over untyped containers must annotate the loop variable.** `range()`, strings, and typed arrays infer automatically:
+  ```gdscript
+  for x in untyped_array { ... }        # ❌ error
+  for x: auto in untyped_array { ... }  # ✅
+  for x: int in untyped_array { ... }   # ✅
+  ```
+- **Unsafe/dynamic calls are errors** — use explicit casts:
+  ```gdscript
+  (node as Enemy).hurt(1);
+  ```
+
+`auto` is an alias for type inference — identical to `:=`.
+
+Constants are exempt from the declaration rule (`const c = 5;` still works), and property `get`/`set` blocks inherit the property's type automatically.
+
+This strictness is tunable: it's driven by warning levels (`debug/gdscriptc/warnings/*` in Project Settings, or the defaults in `gdscriptc_warning.h`).
 
 ## What's NOT included
 
 - C-style `for (int i = 0; i < n; i++)` → use `for i in range(n)`
 - `++` / `--` → use `i += 1`
 - `"{}"` string interpolation → use `"hello %s" % name`
+- Untyped declarations (`var x = ...`) — typing is enforced; use `:=`, `: Type`, or `: auto`
 
 ## Install
 
 ```bash
-git clone https://github.com/mait-elk42/gdscriptc custom_modules/gdc
+git clone https://github.com/mait-elk42/gdscriptc custom_modules/gdscriptc
 scons platform=linuxbsd target=editor custom_modules=custom_modules
 ```
 
@@ -135,4 +175,3 @@ Attach `.gdsc` scripts like `.gd` scripts.
 ## License
 
 MIT — forked from the Godot Engine (MIT). See `LICENSE`.
-

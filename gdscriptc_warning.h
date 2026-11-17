@@ -120,13 +120,13 @@ public:
 		WARN, // STANDALONE_EXPRESSION
 		WARN, // STANDALONE_TERNARY
 		WARN, // INCOMPATIBLE_TERNARY
-		IGNORE, // UNTYPED_DECLARATION // Static typing is optional, we don't want to spam warnings.
+		ERROR, // UNTYPED_DECLARATION // Enforce static typing on every declaration.
 		IGNORE, // INFERRED_DECLARATION // Static typing is optional, we don't want to spam warnings.
-		IGNORE, // UNSAFE_PROPERTY_ACCESS // Too common in untyped scenarios.
-		IGNORE, // UNSAFE_METHOD_ACCESS // Too common in untyped scenarios.
-		IGNORE, // UNSAFE_CAST // Too common in untyped scenarios.
-		IGNORE, // UNSAFE_CALL_ARGUMENT // Too common in untyped scenarios.
-		WARN, // UNSAFE_VOID_RETURN
+		ERROR, // UNSAFE_PROPERTY_ACCESS // Enforce static type safety.
+		ERROR, // UNSAFE_METHOD_ACCESS // Enforce static type safety.
+		ERROR, // UNSAFE_CAST // Enforce static type safety.
+		ERROR, // UNSAFE_CALL_ARGUMENT // Enforce static type safety.
+		ERROR, // UNSAFE_VOID_RETURN
 		IGNORE, // RETURN_VALUE_DISCARDED // Too spammy by default on common cases (connect, Tween, etc.).
 		WARN, // STATIC_CALLED_ON_INSTANCE
 		WARN, // MISSING_TOOL

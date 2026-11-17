@@ -2378,7 +2378,7 @@ void GDScriptCAnalyzer::resolve_for(GDScriptCParser::ForNode *p_for) {
 		} else {
 			p_for->variable->set_datatype(variable_type);
 #ifdef DEBUG_ENABLED
-			if (variable_type.is_hard_type()) {
+			if (p_for->infer_datatype || variable_type.is_hard_type()) {
 				parser->push_warning(p_for->variable, GDScriptCWarning::INFERRED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
 			} else {
 				parser->push_warning(p_for->variable, GDScriptCWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);

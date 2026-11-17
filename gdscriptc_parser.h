@@ -847,6 +847,7 @@ public:
 		IdentifierNode *variable = nullptr;
 		TypeNode *datatype_specifier = nullptr;
 		bool use_conversion_assign = false;
+		bool infer_datatype = false;
 		ExpressionNode *list = nullptr;
 		SuiteNode *loop = nullptr;
 
