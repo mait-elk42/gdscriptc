@@ -85,7 +85,7 @@ var max_health: int {
 	get {
 		return max_health;
 	}
-	set(value: int) {
+	set(value) {
 		max_health = value;
 	}
 }
