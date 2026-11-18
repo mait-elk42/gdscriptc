@@ -121,12 +121,13 @@ Still uses `:` only for: type annotations (`var x: int`, `var x: auto`), diction
 
 GDScriptC enforces static typing by default (unlike GDScript, where it's optional):
 
-- **Declarations must be typed** — use `:=` (infer), `: Type` (explicit), or `: auto` (infer):
+- **Declarations must be typed** — use `:=` (infer), `: Type` (explicit), or `: auto` (dynamic `Variant`):
   ```gdscript
   var i = 10;          # ❌ error
-  var i := 10;         # ✅ inferred
-  var i : int = 10;    # ✅ explicit
-  var i : auto = 10;   # ✅ explicit inference
+  var i := 10;         # ✅ inferred (fixed int)
+  var i : int = 10;    # ✅ explicit (fixed int)
+  var i : auto = 10;   # ✅ dynamic (Variant) — can hold/change to any type
+  i = "hello";         # ✅ valid
   ```
 - **Function return types are required**, including lambdas:
   ```gdscript
@@ -150,7 +151,7 @@ GDScriptC enforces static typing by default (unlike GDScript, where it's optiona
   (node as Enemy).hurt(1);
   ```
 
-`auto` is an alias for type inference — identical to `:=`.
+`auto` is an alias for `Variant` — opt-in dynamic typing that allows a variable to hold or change to any type at runtime.
 
 Constants are exempt from the declaration rule (`const c = 5;` still works), and property `get`/`set` blocks inherit the property's type automatically.
 
