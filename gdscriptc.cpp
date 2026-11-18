@@ -2635,6 +2635,7 @@ Vector<String> GDScriptCLanguage::get_reserved_words() const {
 	// Please keep alphabetical order within categories.
 	static const Vector<String> ret = {
 		// Control flow.
+		"auto",
 		"break",
 		"continue",
 		"elif",
